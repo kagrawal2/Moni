@@ -2,6 +2,7 @@ from flask import Flask, request, Response, jsonify, render_template
 import cv2
 import requests
 import time
+import json
 import numpy as np
 
 app = Flask(__name__)
@@ -15,7 +16,7 @@ app.config['FALL_COUNT'] = 0
 
 @app.route("/")
 def template_test():
-    return render_template('template.html', my_string="Wheeeee!", my_list=[0,1,2,3,4,5])
+    return render_template('template.html')
 
 
 @app.route("/pose_status", methods=['POST'])
@@ -64,7 +65,10 @@ def get_current_pose():
         'stand_count': app.config['STAND_COUNT'],
         'fall_count': app.config['FALL_COUNT']
     }
-    return jsonify(ret)
+    ret_dump = json.dumps(ret)
+    loaded_r = json.loads(ret_dump)
+    return render_template("template.html", items=loaded_r)
+
 
 
 @app.route("/rotate_servo", methods=['GET', 'POST'])
