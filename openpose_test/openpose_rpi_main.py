@@ -1,8 +1,15 @@
 import cv2
 import time
 import numpy as np
+import pickle
+import requests
+import json
 
 MODE = "COCO"
+filename = 'finalized_model.sav'
+# load the model from disk
+loaded_model = pickle.load(open(filename, 'rb'))
+
 
 if MODE is "COCO":
     protoFile = "pose/coco/pose_deploy_linevec.prototxt"
@@ -24,15 +31,98 @@ lastUpdate = time.time()
 last_ball_time = 0
 
 
-def classify_pose(points):
-    POSSIBLE_POSES = ["none", "standing", "fallen", "sitting"]  # "bad_posture"
-    pass
+def classify_pose(points, img_width, img_height):
+    POSSIBLE_POSES = ["sitting", "standing", "fallen"]
+    print(points)
+    nose, neck, right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist, right_hip, right_knee, right_ankle, left_hip, left_knee, left_ankle, right_eye, left_eye, right_ear, left_ear = points
 
-def analyze_points(points):
-    pass
+    y_threshold = 75
+    pose_classification = "none"
+    predicted_probability = "none"
+
+    # print(nose)
+    # print(right_shoulder)
+    # print(left_shoulder)
+
+    flat_list = []
+    for coord in points:
+        if coord:
+            flat_list.append(coord[0])
+            flat_list.append(coord[1])
+        else:
+            flat_list.append(-1) # Missing X
+            flat_list.append(-1) # Missing Y
+
+    flat_list = np.array([flat_list])
+    if len(np.unique(flat_list)) == 1:
+        pose_classification = "none"
+    else:
+        predicted_pose = loaded_model.predict(flat_list)
+        predicted_probability = loaded_model.predict_proba(flat_list)
+        print(predicted_pose)
+        print(predicted_probability)
+
+        if len(predicted_pose) > 0 and len(predicted_probability) > 0 and predicted_probability[0][predicted_pose[0]] > 0.3:
+            pose_classification = POSSIBLE_POSES[predicted_pose[0]]
+            predicted_probability = predicted_probability[0][predicted_pose[0]]
+        else:
+            pose_classification = "none"
+
+    # Determine which direction to move the servo
+    action = 0
+    threshold = 50
+
+    if nose:
+        n_diff = nose[1] - (img_height / 2.0)
+        if abs(n_diff) < threshold:
+            action = 0
+        else:
+            action = int(65.0 * n_diff / float(img_height))
+    elif neck:
+        n_diff = neck[1] - (img_height / 2.0)
+        if abs(n_diff) < threshold:
+            action = 0
+        else:
+            action = int(65.0 * n_diff / float(img_height))
+    
+    print(img_width, img_height)
+    print(nose)
+    print(neck)
+    print(action)
+
+    # print(predicted_probability[0][predicted_pose[0]])
+    # print(pose_classification)
+
+    if action > 15:
+        action = 15
+    elif action < -15
+        action = -15
+
+    return pose_classification, predicted_probability, action
+
+
+class_data = []
+def collect_pose_data(points):
+    # nose, neck, right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist, right_hip, right_knee, right_ankle, left_hip, left_knee, left_ankle, right_eye, left_eye, right_ear, left_ear = points
+    # flat_list = [item for sublist in points for item in sublist]
+    flat_list = []
+    for coord in points:
+        if coord:
+            flat_list.append(coord[0])
+            flat_list.append(coord[1])
+        else:
+            flat_list.append(-1) # Missing X
+            flat_list.append(-1) # Missing Y
+
+    class_data.append(flat_list)
 
 
 # Main Embedded Raspberry Pi Loop
+# while True:
+# i = 0
+# num_data_per_class = 110
+# time.sleep(3)
+true_action = 0
 while True:
     if time.time() - lastUpdate < time_per_frame:
         # Ideally we would not sleep, but set a timer that interrupts instead of busy waiting
@@ -42,7 +132,9 @@ while True:
     (grabbed, frame) = camera.read()
     # frame = cv2.imread("kireet.jpg")
     frameCopy = np.copy(frame)
-    
+
+    cv2.imwrite('test-output.jpg', frame)
+
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]
     threshold = 0.1
@@ -81,29 +173,61 @@ while True:
         if prob > threshold : 
             cv2.circle(frameCopy, (int(x), int(y)), 8, (0, 255, 255), thickness=-1, lineType=cv2.FILLED)
             cv2.putText(frameCopy, "{}".format(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-
             # Add the point to the list if the probability is greater than the threshold
             points.append((int(x), int(y)))
         else :
             points.append(None)
 
     # Draw Skeleton
-    for pair in POSE_PAIRS:
-        partA = pair[0]
-        partB = pair[1]
+    # paired_points = []
+    # for pair in POSE_PAIRS:
+    #     partA = pair[0]
+    #     partB = pair[1]
 
-        if points[partA] and points[partB]:
-            cv2.line(frame, points[partA], points[partB], (0, 255, 255), 2)
-            cv2.circle(frame, points[partA], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
+    #     if points[partA] and points[partB]:
+    #         cv2.line(frame, points[partA], points[partB], (0, 255, 255), 2)
+    #         cv2.circle(frame, points[partA], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
 
+    possible_pose, pose_probability, action_difference = classify_pose(points, frameHeight, frameWidth)
 
-    cv2.imshow('Output-Keypoints', frameCopy)
-    cv2.imshow('Output-Skeleton', frame)
+    #nose, neck, right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist, right_hip, right_knee, right_ankle, left_hip, left_knee, left_ankle, right_eye, left_eye, right_ear, left_ear = points
+    #cv2.circle(frame, (int(nose[0]), int(nose[1]-100)), 20, (0, 0, 0), thickness=-1, lineType=cv2.FILLED)
+    #cv2.imwrite('test-output-123.jpg', frame)
 
+    # cv2.imshow('Output-Keypoints', frameCopy)
+    # cv2.imshow('Output-Skeleton', frame)
 
-    cv2.imwrite('Output-Keypoints.jpg', frameCopy)
-    cv2.imwrite('Output-Skeleton.jpg', frame)
+    # cv2.imwrite('Output-Keypoints.jpg', frameCopy)
+    # cv2.imwrite('Output-Skeleton.jpg', frame)
+    data = {
+      'predicted_pose': possible_pose,
+      'pose_probability': str(pose_probability)
+    }   
+    url = "http://127.0.0.1:5000"
+    # response = requests.post('https://caramel-logic-231220.appspot.com', data=data)
+    # response = requests.post('http://127.0.0.1:5000/pose_status', json=data)
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    response = requests.post(url + '/pose_status', data=json.dumps(data), headers=headers)
+    true_action += action_difference
+
+    if true_action > 90:
+        true_action = 90
+    elif true_action < -90:
+        true_action = -90
+
+    if true_action != 0:
+        payload = { 'rotate': true_action }
+        response = requests.get(url + '/rotate_servo', params=payload)
+
+    # print(response)
 
     print("Total time taken : {:.3f}".format(time.time() - t))
+    print("Expected pose: " + possible_pose)
+
+
+
+
+# np.save('none.npy', np.array(class_data))
+# save the class_data as a numpy array
 
 # cv2.waitKey(0)
