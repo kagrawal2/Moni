@@ -1,0 +1,15 @@
+runtime: python
+runtime_config:
+  python_version: 3.4
+env: flex
+entrypoint: gunicorn -b :$PORT app:app
+
+handlers:
+- url: /static
+  static_dir: static
+
+manual_scaling:
+  instances: 2
+
+api_version: 1
+threadsafe: true
