@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, jsonify, render_template
+from flask import Flask, request, Response, jsonify, render_template, redirect, url_for
 import cv2
 import requests
 import time
@@ -14,8 +14,15 @@ app.config['FALL_COUNT'] = 0
 
 
 @app.route("/")
-def template_test():
-    return render_template('template.html', my_string="Wheeeee!", my_list=[0,1,2,3,4,5])
+def home():
+    data = {
+            'pose': app.config['POSE'],
+            'prob': app.config['PROB'],
+            'sit_count': app.config['SIT_COUNT'],
+            'stand_count': app.config['STAND_COUNT'],
+            'fall_count': app.config['FALL_COUNT']
+            }
+    return render_template('home.html', title="Home", table_data=data)
 
 @app.route("/pose_status", methods=['POST'])
 def update_current_pose():
@@ -39,31 +46,29 @@ def update_current_pose():
     }
     return jsonify(ret)
 
-@app.route("/reset_counts", methods=['GET'])
+@app.route("/reset_counts", methods=['GET', 'POST'])
 def reset_counts():
     app.config['SIT_COUNT'] = 0
     app.config['STAND_COUNT'] = 0
     app.config['FALL_COUNT'] = 0
-    ret = {
-        'pose': app.config['POSE'],
-        'prob': app.config['PROB'],
-        'sit_count': app.config['SIT_COUNT'],
-        'stand_count': app.config['STAND_COUNT'],
-        'fall_count': app.config['FALL_COUNT']
-    }
-    return jsonify(ret)
+
+    return redirect(url_for('home'))
 
 
 @app.route("/get_pose", methods=['GET'])
 def get_current_pose():
-    ret = {
-        'pose': app.config['POSE'],
-        'prob': app.config['PROB'],
-        'sit_count': app.config['SIT_COUNT'],
-        'stand_count': app.config['STAND_COUNT'],
-        'fall_count': app.config['FALL_COUNT']
+    data = {
+        "data" : [
+            {
+                'pose': app.config['POSE'],
+                'prob': app.config['PROB'],
+                'sit_count': app.config['SIT_COUNT'],
+                'stand_count': app.config['STAND_COUNT'],
+                'fall_count': app.config['FALL_COUNT']
+            }
+            ]
     }
-    return jsonify(ret)
+    return jsonify(data)
 
 
 @app.route("/rotate_servo", methods=['GET', 'POST'])
@@ -73,16 +78,18 @@ def rotate_servo():
     rotate_val = min(90, int(rotate_val))
     rotate_val = max(-90, int(rotate_val))
 
-    particle_cloud_api = "https://api.particle.io/v1/devica6301ad5ddc428"
-    access_token = "650d89d752326cced1f93db0d9a"
-
+    # 650d89d752326cced1f93db0d9a6301ad5ddc428
+    # wifi: dd4cb272827f7325057ec0746b526c09439ae85e
     data = {
       'access_token': '650d89d752326cced1f93db0d9a6301ad5ddc428',
       'args': str(rotate_val)
-    }   
+    }
+    # 1e003e000f47373333353132
+    # wifi: 55003f001051373331333230
     response = requests.post('https://api.particle.io/v1/devices/1e003e000f47373333353132/rotateOdisus', data=data)
     print(response)
     return 'Sent rotate command ' + str(rotate_val)
+
 
 
 @app.route("/get_pose", methods=['POST'])
@@ -185,4 +192,4 @@ def get_pose_from_image():
     # cv2.waitKey(0)
 
 if __name__ == "__main__":
-    app.run(threaded=False, debug=True)
+    app.run(threaded=True, debug=True)

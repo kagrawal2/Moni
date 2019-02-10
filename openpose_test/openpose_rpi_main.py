@@ -6,7 +6,7 @@ import requests
 import json
 
 MODE = "COCO"
-filename = 'finalized_model.sav'
+filename = 'finalized_model_v1.sav'
 # load the model from disk
 loaded_model = pickle.load(open(filename, 'rb'))
 
@@ -73,17 +73,17 @@ def classify_pose(points, img_width, img_height):
     threshold = 50
 
     if nose:
-        n_diff = nose[1] - (img_height / 2.0)
+        n_diff = nose[0] - (img_width / 2.0)
         if abs(n_diff) < threshold:
             action = 0
         else:
-            action = int(65.0 * n_diff / float(img_height))
+            action = int(65.0 * n_diff / float(img_width))
     elif neck:
-        n_diff = neck[1] - (img_height / 2.0)
+        n_diff = neck[0] - (img_width / 2.0)
         if abs(n_diff) < threshold:
             action = 0
         else:
-            action = int(65.0 * n_diff / float(img_height))
+            action = int(65.0 * n_diff / float(img_width))
     
     print(img_width, img_height)
     print(nose)
@@ -95,7 +95,7 @@ def classify_pose(points, img_width, img_height):
 
     if action > 15:
         action = 15
-    elif action < -15
+    elif action < -15:
         action = -15
 
     return pose_classification, predicted_probability, action
@@ -204,8 +204,8 @@ while True:
       'pose_probability': str(pose_probability)
     }   
     url = "http://127.0.0.1:5000"
+    # url = "https://caramel-logic-231220.appspot.com"
     # response = requests.post('https://caramel-logic-231220.appspot.com', data=data)
-    # response = requests.post('http://127.0.0.1:5000/pose_status', json=data)
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     response = requests.post(url + '/pose_status', data=json.dumps(data), headers=headers)
     true_action += action_difference

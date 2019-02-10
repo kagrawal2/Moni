@@ -5,14 +5,24 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 import pickle
 
-sit = np.load('sitting.npy')
+
+sit = np.load('sit_retrain_v1.npy')
 print(len(sit))
 
-stand = np.load('standing.npy')
+stand = np.load('stand_retrain.npy')
 print(len(stand))
 
-fall = np.load('fallen.npy')
+fall = np.load('fall_retrain.npy')
 print(len(fall))
+
+# sit = np.load('sitting.npy')
+# print(len(sit))
+
+# stand = np.load('standing.npy')
+# print(len(stand))
+
+# fall = np.load('fallen.npy')
+# print(len(fall))
 # b = np.load('none.npy')
 # print(len(b))
 
@@ -43,6 +53,6 @@ print("Precision:",metrics.precision_score(y_test, y_pred, average=None))
 print("Recall:",metrics.recall_score(y_test, y_pred, average=None))
 
 
-filename = 'finalized_model.sav'
+filename = 'finalized_model_v1.sav'
 pickle.dump(clf, open(filename, 'wb'))
 
