@@ -1,5 +1,4 @@
-from flask import Flask, request, Response
-import jsonpickle
+from flask import Flask, request, Response, jsonify
 import cv2
 import requests
 import time
@@ -7,9 +6,65 @@ import numpy as np
 
 app = Flask(__name__)
 
+app.config['POSE'] = "none"
+app.config['PROB'] = "0"
+app.config['SIT_COUNT'] = 0
+app.config['STAND_COUNT'] = 0
+app.config['FALL_COUNT'] = 0
+
+
 @app.route("/")
 def hello():
-    return "Hello World!"
+    return "Welcome to the Moni!"
+
+@app.route("/pose_status", methods=['POST'])
+def update_current_pose():
+    pose = request.json['predicted_pose']
+    prob = request.json['pose_probability']
+    app.config['POSE'] = pose
+    app.config['PROB'] = prob
+    if pose == 'sitting':
+        app.config['SIT_COUNT'] += 1
+    elif pose == 'standing':
+        app.config['STAND_COUNT'] += 1
+    elif pose == 'fallen':
+        app.config['FALL_COUNT'] += 1
+
+    ret = {
+        'pose': app.config['POSE'],
+        'prob': app.config['PROB'],
+        'sit_count': app.config['SIT_COUNT'],
+        'stand_count': app.config['STAND_COUNT'],
+        'fall_count': app.config['FALL_COUNT']
+    }
+    return jsonify(ret)
+
+@app.route("/reset_counts", methods=['GET'])
+def reset_counts():
+    app.config['SIT_COUNT'] = 0
+    app.config['STAND_COUNT'] = 0
+    app.config['FALL_COUNT'] = 0
+    ret = {
+        'pose': app.config['POSE'],
+        'prob': app.config['PROB'],
+        'sit_count': app.config['SIT_COUNT'],
+        'stand_count': app.config['STAND_COUNT'],
+        'fall_count': app.config['FALL_COUNT']
+    }
+    return jsonify(ret)
+
+
+@app.route("/get_pose", methods=['GET'])
+def get_current_pose():
+    ret = {
+        'pose': app.config['POSE'],
+        'prob': app.config['PROB'],
+        'sit_count': app.config['SIT_COUNT'],
+        'stand_count': app.config['STAND_COUNT'],
+        'fall_count': app.config['FALL_COUNT']
+    }
+    return jsonify(ret)
+
 
 @app.route("/rotate_servo", methods=['GET', 'POST'])
 def rotate_servo():
@@ -27,6 +82,7 @@ def rotate_servo():
     }   
     response = requests.post('https://api.particle.io/v1/devices/1e003e000f47373333353132/rotateOdisus', data=data)
     return 'Sent rotate command ' + str(rotate_val)
+
 
 @app.route("/get_pose", methods=['POST'])
 def get_pose_from_image():
@@ -128,4 +184,4 @@ def get_pose_from_image():
     # cv2.waitKey(0)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(threaded=False, debug=True)

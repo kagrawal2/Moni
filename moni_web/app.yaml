@@ -9,7 +9,7 @@ handlers:
   static_dir: static
 
 manual_scaling:
-  instances: 2
+  instances: 1
 
 api_version: 1
 threadsafe: true
