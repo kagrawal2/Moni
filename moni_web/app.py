@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, jsonify, render_template
 import cv2
 import requests
 import time
@@ -14,8 +14,9 @@ app.config['FALL_COUNT'] = 0
 
 
 @app.route("/")
-def hello():
-    return "Welcome to the Moni!"
+def template_test():
+    return render_template('template.html', my_string="Wheeeee!", my_list=[0,1,2,3,4,5])
+
 
 @app.route("/pose_status", methods=['POST'])
 def update_current_pose():

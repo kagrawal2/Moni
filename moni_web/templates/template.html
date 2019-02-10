@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Flask Template Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style type="text/css">
+      .container {
+        max-width: 500px;
+        padding-top: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p>My string: {{rotate_val}}</p>
+      <p>Value from the list: {{my_list[3]}}</p>
+      <p>Loop through the list:</p>
+      <ul>
+        {% for n in my_list %}
+        <li>{{n}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container">
+      
+
+  "fall_count": 1,
+  "pose": "standing",
+  "prob": "0.8926624829667441",
+  "sit_count": 0,
+  "stand_count": 2
+
+    </div>
+    <div class="container">
+      <form action="/reset_count" method="get">
+      <button type="submit" value="10">
+        Reset Display
+      </button>
+      </form>
+    </div>
+      <script type=text/javascript>
+              $(function() {
+                $('a#test').bind('click', function() {
+                  $.getJSON('/rotate_servo',
+                      function(data) {
+                    //do nothing
+                  });
+                  return false;
+                });
+              });
+      </script>
+
+
+      <div>
+
+      </div>
+
+      //button
+      <div class='container'>
+          <h3>Test</h3>
+              <form>
+                  <a href=# id=test><button class='btn btn-default'>Test</button></a>
+              </form>
+
+      </div>
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  </body>
+</html>
