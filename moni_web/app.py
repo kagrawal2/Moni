@@ -17,7 +17,6 @@ app.config['FALL_COUNT'] = 0
 def template_test():
     return render_template('template.html', my_string="Wheeeee!", my_list=[0,1,2,3,4,5])
 
-
 @app.route("/pose_status", methods=['POST'])
 def update_current_pose():
     pose = request.json['predicted_pose']
@@ -82,6 +81,7 @@ def rotate_servo():
       'args': str(rotate_val)
     }   
     response = requests.post('https://api.particle.io/v1/devices/1e003e000f47373333353132/rotateOdisus', data=data)
+    print(response)
     return 'Sent rotate command ' + str(rotate_val)
 
 
