@@ -12,7 +12,6 @@ app.config['SIT_COUNT'] = 0
 app.config['STAND_COUNT'] = 0
 app.config['FALL_COUNT'] = 0
 
-
 @app.route("/")
 def home():
     data = {

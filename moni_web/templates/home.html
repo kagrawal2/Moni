@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h3 style="text-align: center;">Pose Detection</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Pose</th>
+                <th>Probability</th>
+            </tr>
+        </thead>
+        <tr>
+            <th>{{ table_data.pose }}</th>
+            <td>{{ table_data.prob }}</td>
+        </tr>
+    </table>
+    
+    <br>
+    <hr>
+    <br>
+
+    <h3 style="text-align: center;">Daily Activity Count</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Standing</th>
+                <th>Sitting</th>
+                <th>Fallen</th>
+            </tr>
+        </thead>
+        <tr>
+            <td>{{ table_data.stand_count }}</td>
+            <td>{{ table_data.sit_count }}</td>
+            <td>{{ table_data.fall_count }}</td>
+        </tr>
+    </table>
+
+    <div>
+        {% if table_data.pose == "sitting" %}
+            <h1 style="text-align: center; font-size: 20px !important; color: #4885ed;">Everything Looks Good! They are just sitting Down to Relax :)</h1>
+        {% elif table_data.pose == "standing" %}
+            <h1 style="text-align: center; font-size: 20px !important; color: #3cba54;">Everything Looks Okay! They are staying Active!</h1>
+        {% elif table_data.pose == "fallen" %}
+            <h1 style="text-align: center; font-size: 20px !important; color: #db3236;">UH OH! They might have Fallen!</h1>
+        {% endif %}
+    </div>
+
+{% endblock %}

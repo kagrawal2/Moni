@@ -1,0 +1,26 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }}</title>
+      {% else %}
+      <title>Welcome to Moni</title>
+      {% endif %}
+      <meta http-equiv="refresh" content="10" />
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      
+     <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    </head>
+    <body class="bg-light">
+      <div style="background-color: #3b5998;" class="container">
+        <h1 style="text-align: center; color:white;">Odysseus</h1>
+      </div>
+        <hr>
+        <br>
+        {% block content %}{% endblock %}
+        <hr>
+        <div><a href="/" class="text-primary bg-primary">>Home</a></div>
+        <div><a href="/reset_counts" class="text-warning bg-danger">>Reset</a></div>
+    </body>
+</html>
