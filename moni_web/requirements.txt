@@ -9,7 +9,7 @@ opencv-python==3.3.0.9
 pathlib2==2.3.3
 pluggy==0.8.1
 py==1.7.0
-Pygments==2.3.1
+Pygments==2.7.4
 request==0.0.2
 requests==2.21.0
 scandir==1.9.0
