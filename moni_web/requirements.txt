@@ -5,7 +5,7 @@ idna==2.8
 jsonpickle==1.1
 more-itertools==5.0.0
 numpy==1.16.1
-opencv-python==3.3.0.9
+opencv-python==3.4.7.28
 pathlib2==2.3.3
 pluggy==0.8.1
 py==1.7.0
